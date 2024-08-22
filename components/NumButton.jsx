@@ -13,7 +13,7 @@ export default function NumButton({ num, handleClick }) {
 
 const styles = StyleSheet.create({
     button: {
-        width: 60, // Adjust width
+        width: 90, // Adjust width
         height: 60, // Adjust height
         borderRadius: 10, // Rounded corners
         backgroundColor: '#007BFF', // Button color

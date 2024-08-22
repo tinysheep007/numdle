@@ -1,56 +1,46 @@
-import { StyleSheet, View, Text, Button, ScrollView, Pressable } from 'react-native';
+import { View, Text, Button, ScrollView, TouchableOpacity } from 'react-native';
 import { useState } from 'react';
 import NumButton from "../../components/NumButton";
 import GeussTotal from "../../components/GeussTotal";
 import GeussNum from '@/components/GeussNum';
-import styles from "./GameStyle";
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 
 export default function Game() {
-    const arr = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+    const router = useRouter();
+    const arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
     const [input, setInput] = useState("");
     const [ans, setAns] = useState("1234");
-    const [hints, setHints] = useState({
-        A: 0,
-        B: 0
-    });
+    const [hints, setHints] = useState({ A: 0, B: 0 });
     const [win, setWin] = useState(false);
-    /**
-     * Example: 
-     * 0: Not included in the answer at all 
-     * 1: Right place in the letter
-     * 2: wrong place in the letter
-     * [{
-     *  "1234":[0,1,2,1]
-     * }]
-     */
     const [guesses, setGuesses] = useState([]);
-    const [cheat, setCheat] = useState(true);
+    const [inputReady, setInputReady] = useState(true); // State to track if input should be shown
 
-    // function that add number
     const handleClick = (num) => {
-        // only add string if less than 4 digit and no repeats
         if (input.length <= 3 && !input.includes(num)) {
-            let numString = String(num);
-            let tempString = input;
-            tempString = tempString + numString;
-            setInput(tempString);
+            setInput(input + String(num));
         }
-    }
+    };
 
     const handleDelete = () => {
         if (input.length > 0) {
-            let temp = input.slice(0, -1);
-            setInput(temp);
+            setInput(input.slice(0, -1));
         }
-    }
+    };
 
     const handleSubmit = () => {
-        // can only submit if you have 4 digit
         if (input.length != 4) {
+            alert("Please submit a 4 digit number!")
             return;
         }
-
-        // win game condition
+        // if there is repeat gives alert
+        for(const element of guesses){
+            if (element.number == input) {
+                alert("You can't submit the same number twice!")
+                return;
+            }
+        }
+        setInputReady(false); // Disable input until flips are done
         if (input === ans) {
             setWin(true);
         } else {
@@ -58,137 +48,146 @@ export default function Game() {
             setInput("");
             setWin(false);
         }
-    }
+    };
 
-    // update hints
     const updateHint = () => {
-        let i;
-        let a = 0;
-        let b = 0;
+        let a = 0, b = 0;
         let currentGeuss = [];
-        for (i = 0; i < input.length; i++) {
-            // find A 
-            // fully correct
+        for (let i = 0; i < input.length; i++) {
             if (input[i] === ans[i]) {
-                a = a + 1;
+                a += 1;
                 currentGeuss[i] = 2;
-            // find B
-            // only contained not in the right place
             } else if (ans.includes(input[i])) {
-                b = b + 1;
+                b += 1;
                 currentGeuss[i] = 1;
-            // not in the ans at all
-            }else{
+            } else {
                 currentGeuss[i] = 0;
             }
         }
-        setHints({
-            A: a,
-            B: b,
-        });
+        setHints({ A: a, B: b });
+        setGuesses([...guesses, { number: input, result: currentGeuss }]);
+    };
 
-        // now update hints
-        setGuesses([
-            ...guesses,
-            {
-                number: input,
-                result: currentGeuss
-            }
-        ])
-        console.log(currentGeuss)
-        console.log(guesses)
+    const handleAllFlipsComplete = () => {
+        setInputReady(true); // Re-enable input after all flips are done
+    };
 
-    }
-
-    // play again reset everything
     const handlePlayAgain = () => {
         setWin(false);
-        // create new answer
         generateNewAns();
-        setHints({
-            A: 0,
-            B: 0
-        });
+        setHints({ A: 0, B: 0 });
         setInput("");
-        setGuesses([])
-        
-    }
+        setGuesses([]);
+        setInputReady(true);
+    };
 
-    // generated new answer
     const generateNewAns = () => {
         let newAns = "";
-        // keep generating until we have 4 unique digit
-        while(newAns.length != 4){
-            // create random number from 1-10
+        while (newAns.length != 4) {
             let newInt = Math.floor(1 + Math.random() * 10);
-            // convert to string
             let newStr = String(newInt);
-            // if there's no repeat with previous int then add to string
-            if(!newAns.includes(newStr)){
+            if (!newAns.includes(newStr)) {
                 newAns = newAns + newStr;
             }
         }
         setAns(newAns);
-    }
+    };
 
-    let inputBoxNum = input.split('')
-    while(inputBoxNum.length < 4){
-        inputBoxNum.push(' ')
+    let inputBoxNum = input.split('');
+    while (inputBoxNum.length < 4) {
+        inputBoxNum.push(' ');
     }
 
     return (
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
-            <View style={styles.container}>
+        <ScrollView className="flex-1 h-full bg-gray-100">
+            <View className="flex-1 justify-center items-center p-4 bg-gray-100 min-h-full">
                 {win ? (
-                    <View style={styles.winContainer}>
-                        <Text style={styles.winText}>
-                            You won! The answer is {ans}
-                        </Text>
-                        <Button title='Play Again' onPress={handlePlayAgain} />
+                    <View className="flex-1 justify-center items-center mt-10">
+                        <View className="p-4 items-center justify-center bg-green-500 rounded-lg">
+                            <Text className="text-white text-lg font-bold">You won! The answer is {ans}</Text>
+                            <Text className="text-white text-lg font-bold">It took you {guesses.length + 1} try!</Text>
+                            <TouchableOpacity 
+                                onPress={handlePlayAgain} 
+                                className="bg-blue-500 p-3 rounded-lg mt-5 mb-5"
+                            >
+                                <Text className="text-white text-lg font-bold text-center">Play Again</Text>
+                            </TouchableOpacity>
+
+                        </View>
                     </View>
                 ) : (
-                    <View style={styles.gameContainer}>
-                        <Text style={styles.title}>Numdle</Text>
-        
-                        {cheat && (
-                            <Text style={styles.cheatText}>Answer: {ans}</Text>
-                        )}
-        
-                        <Text style={styles.hintsText}>Hints: {hints.A} A {hints.B} B</Text>
-        
-                        {guesses.map(({ number, result }) => (
-                            <GeussTotal key={number} number={number} result={result} />
+                    <View className="w-full items-center justify-center flex-1 min-h-screen">
+                        {/* Row for the title and buttons */}
+                        <View className="flex-row items-center justify-between w-full px-4 mb-4">
+                            {/* Left Exclamation Button */}
+                            <TouchableOpacity
+                                className="w-12 h-12 bg-red-500 rounded-full justify-center items-center"
+                                onPress={() => alert(`The correct answer is: ${ans}`)}
+                            >
+                                <Ionicons name="alert-circle" size={24} color="white" />
+                            </TouchableOpacity>
+
+                            {/* Title */}
+                            <TouchableOpacity onPress={() => router.navigate("/")}>
+                                <Text className="text-3xl font-bold">Numdle</Text>
+                            </TouchableOpacity>
+
+                            {/* Right Question Button */}
+                            <TouchableOpacity
+                                className="w-12 h-12 bg-blue-500 rounded-full justify-center items-center"
+                                onPress={() => alert('This is just like Wordle. If you want to challenge yourself, only using _ A _ B hints is great too! \n\n A means the amount of digits that sit in the right spot when compared to the answer. \n\n B means the amount of digits that did not sit in the right spot, but the answer does contain the digit.')}
+                            >
+                                <Ionicons name="help-circle" size={24} color="white" />
+                            </TouchableOpacity>
+                        </View>
+    
+                        <Text className="text-lg mb-4">Hints: {hints.A} A {hints.B} B</Text>
+
+                        {guesses.map(({ number, result }, index) => (
+                            <GeussTotal 
+                                key={index} 
+                                number={number} 
+                                result={result} 
+                                onAllFlipsComplete={handleAllFlipsComplete} 
+                            />
                         ))}
-
-                        <View style={styles.inputBoxContainer}>
-                            {inputBoxNum.map((char, index) => (
-                                <GeussNum key={index} num={char} correctness={-1} />
-                            ))}
-                        </View>
-        
-                        <View style={styles.buttonContainer}>
-                            {arr.map((a) => (
-                                <View style={styles.numButton} key={a}>
-                                    <NumButton num={a} handleClick={handleClick} />
-                                </View>
-                            ))}
-
-                        </View>
-        
-                        <View style={styles.actionButtonContainer}>
-                            <Pressable 
-                                style={[styles.actionButton, styles.enterButton]}
-                                onPress={handleSubmit}
-                            >
-                                <Text style={styles.buttonText}>Enter</Text>
-                            </Pressable>
-                            <Pressable 
-                                style={[styles.actionButton, styles.deleteButton]}
-                                onPress={handleDelete}
-                            >
-                                <Text style={styles.buttonText}>Delete</Text>
-                            </Pressable>
-                        </View>
+    
+                        {inputReady && (
+                            <View className="flex-row justify-between mb-4">
+                                {inputBoxNum.map((char, index) => (
+                                    <GeussNum key={index} num={char} correctness={-1} />
+                                ))}
+                            </View>
+                        )}
+    
+                        
+                            <View className="flex-row flex-wrap justify-center mb-4">
+                                {arr.map((a) => (
+                                    <View className="w-1/3 p-1" key={a}>
+                                        <View className="flex justify-center items-center">
+                                            <NumButton num={a} handleClick={handleClick} />
+                                        </View>
+                                    </View>
+                                ))}
+                            </View>
+                        
+    
+                        
+                            <View className="flex-row justify-between w-full">
+                                <TouchableOpacity
+                                    className="bg-blue-500 p-3 rounded-lg flex-1 mr-2"
+                                    onPress={handleSubmit}
+                                >
+                                    <Text className="text-white text-center font-bold">Enter</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    className="bg-red-500 p-3 rounded-lg flex-1 ml-2"
+                                    onPress={handleDelete}
+                                >
+                                    <Text className="text-white text-center font-bold">Delete</Text>
+                                </TouchableOpacity>
+                            </View>
+                        
                     </View>
                 )}
             </View>

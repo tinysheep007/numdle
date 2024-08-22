@@ -1,24 +1,32 @@
-import { StyleSheet, View } from 'react-native';
+import React, { useState } from 'react';
+import { View } from 'react-native';
 import GeussNum from './GeussNum';
 
-export default function GeussTotal({ number, result }) {
-    let prop = number.split('');
+export default function GeussTotal({ number, result, onAllFlipsComplete }) {
+  const prop = number.split('');
+  const [completedFlips, setCompletedFlips] = useState(0);
 
-    return (
-        <View style={styles.container}>
-            {prop.map((digit, index) => (
-                <GeussNum key={index} num={digit} correctness={result[index]} />
-            ))}
-        </View>
-    );
+  const handleFlipComplete = () => {
+    setCompletedFlips((prev) => {
+      const newCount = prev + 1;
+      if (newCount === prop.length && onAllFlipsComplete) {
+        onAllFlipsComplete();  // Notify parent that all flips are complete
+      }
+      return newCount;
+    });
+  };
+
+  return (
+    <View className="flex-row justify-center items-center">
+      {prop.map((digit, index) => (
+        <GeussNum
+          key={index}
+          num={digit}
+          correctness={result[index]}
+          delay={index * 200}  // Delay each flip by 200ms
+          onFlipComplete={handleFlipComplete}  // Callback after each flip
+        />
+      ))}
+    </View>
+  );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        // borderRadius: 5,
-        // borderColor: "black",
-        // borderWidth: 2,
-    },
-});
