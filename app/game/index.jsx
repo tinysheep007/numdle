@@ -42,7 +42,11 @@ export default function Game() {
         }
         setInputReady(false); // Disable input until flips are done
         if (input === ans) {
-            setWin(true);
+            setInput("");
+            updateHint();
+            setTimeout(()=>{
+                setWin(true);
+            }, 1200)
         } else {
             updateHint();
             setInput("");
@@ -128,8 +132,8 @@ export default function Game() {
                             </TouchableOpacity>
 
                             {/* Title */}
-                            <TouchableOpacity onPress={() => router.navigate("/")}>
-                                <Text className="text-3xl font-bold">Numdle</Text>
+                            <TouchableOpacity className="bg-pink-500 p-5 rounded-lg mb-5 items-center w-half" onPress={() => router.navigate("/")}>
+                                <Text className="text-4xl font-bold text-white">Numdle</Text>
                             </TouchableOpacity>
 
                             {/* Right Question Button */}
