@@ -1,4 +1,4 @@
-# Numdle 👋
+# Numdle 🔢
 
 Numdle is a 4 digit number guessing game(similar to wordle). Based on user's previous geuses, the game will return user hints about the positioning of each digit. 
 Each digit will only appear once.
@@ -8,6 +8,10 @@ Each digit will only appear once.
 -B represents the answer has this digit but it is not in the right position.
 
 The game is built using expo-packages, react-natives, and nativewind for styling.
+
+## Demo Video 🎥
+
+https://github.com/user-attachments/assets/31ef9c30-4ea4-498c-af6c-a347df8d3293
 
 # Welcome to your Expo app 👋
 
