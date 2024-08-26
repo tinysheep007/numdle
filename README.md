@@ -1,3 +1,14 @@
+# Numdle 👋
+
+Numdle is a 4 digit number guessing game(similar to wordle). Based on user's previous geuses, the game will return user hints about the positioning of each digit. 
+Each digit will only appear once.
+
+-A represents the amount of digits that is in the correct place in the answer.
+
+-B represents the answer has this digit but it is not in the right position.
+
+The game is built using expo-packages, react-natives, and nativewind for styling.
+
 # Welcome to your Expo app 👋
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
